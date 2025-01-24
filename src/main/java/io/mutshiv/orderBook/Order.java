@@ -11,12 +11,22 @@ public class Order {
     private final String side;
     private final double price;
     private int quantity;
+    private long orderTimeStamp;
 
     public Order(double price, int quantity, String side) {
         this.id = UUID.randomUUID().toString();
         this.side = side;
         this.quantity = quantity;
         this.price = price;
+        this.orderTimeStamp = System.nanoTime();
+    }
+
+    public long getOrderTimeStamp() {
+        return orderTimeStamp;
+    }
+
+    public void setOrderTimeStamp(long orderTimeStamp) {
+        this.orderTimeStamp = orderTimeStamp;
     }
 
     public String getId() {
@@ -40,18 +50,9 @@ public class Order {
     }
 
     /**
-     * Reduces the quantity of the order after a sell.
-     *
-     * @param reductionAmount
-     */
-    public void reduceQuantity(int reductionAmount) {
-        this.quantity -= reductionAmount;
-    }
-
-    /**
      * Modifies the quantity of the order.
      *
-     * @param newQuantity 
+     * @param newQuantity
      */
     public void modifyOrder(int newQuantity) {
         this.quantity = newQuantity;
