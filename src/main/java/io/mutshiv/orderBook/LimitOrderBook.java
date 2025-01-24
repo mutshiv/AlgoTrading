@@ -1,5 +1,6 @@
 package io.mutshiv.orderBook;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.PriorityQueue;
@@ -9,6 +10,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 public class LimitOrderBook {
+
     private final PriorityQueue<Order> buyOrders;
     private final PriorityQueue<Order> sellOrders;
 
@@ -16,11 +18,13 @@ public class LimitOrderBook {
     private final Map<String, Order> liveOrders;
 
     public LimitOrderBook() {
-        this.buyOrders = new PriorityQueue<>(Comparator.<Order>comparingDouble(Order::getPrice)
+        this.buyOrders = new PriorityQueue<>(Comparator.<Order>comparingDouble(Order::getPrice).reversed()
                 .thenComparing(Order::getOrderTimeStamp));
+
         this.sellOrders = new PriorityQueue<>(
-                Comparator.<Order>comparingDouble(Order::getPrice)
+                Comparator.<Order>comparingDouble(Order::getPrice).reversed()
                         .thenComparing(Order::getOrderTimeStamp));
+
         this.liveOrders = new ConcurrentHashMap<>();
     }
 
@@ -34,26 +38,32 @@ public class LimitOrderBook {
 
     /**
      * A live Orders view based on side and price.
-     * Returns back a sorted list of orders by their price priority level (Price then time if prices are equal)
+     * Returns back a sorted list of orders by their price priority level (Price
+     * then time if prices are equal)
      *
-     * @param side
-     * @param price
-     * @return Map<String, Order>
+     * @param side  : BUY || SELL
+     * @param price : Double value
+     * @return Map<String, Order> || an Empty Map if there are no order yet
      */
     public Map<String, Order> viewOrders(String side, double price) {
-        return this.liveOrders.entrySet().stream()
-                .filter(order -> order.getValue().getPrice() == price
-                        && order.getValue().getSide().equalsIgnoreCase(side))
-                .sorted((entry1, entry2) -> Double.compare(entry2.getValue().getPrice(), entry1.getValue().getPrice()))
-                .sorted((entry1, entry2) -> Long.compare(entry2.getValue().getOrderTimeStamp(), entry1.getValue().getOrderTimeStamp()))
-                .collect(Collectors.toConcurrentMap(Map.Entry::getKey, Map.Entry::getValue));
+        this.liveOrders.entrySet().forEach(e -> System.out.printf("Order ID = %s, price = %.2f, posted at = %d",
+                e.getValue().getId(), e.getValue().getPrice(), e.getValue().getOrderTimeStamp()));
+
+        return !this.liveOrders.isEmpty() ? this.liveOrders.entrySet().stream()
+                .filter((entry) -> entry.getValue().getPrice() == price
+                        && entry.getValue().getSide().equalsIgnoreCase(side))
+                // .sorted(Comparator.comparingDouble((Map.Entry<String, Order> entry) ->
+                // entry.getValue().getPrice()).reversed()
+                // .thenComparingLong(entry -> entry.getValue().getOrderTimeStamp()))
+                .collect(Collectors.toConcurrentMap(Map.Entry::getKey, Map.Entry::getValue))
+                : Collections.emptyMap();
     }
 
     /**
      * Adds an order to the queue based on the order side.
      * Also updates that liveOrder map.
      *
-     * @param order
+     * @param order : {@link Order}
      */
     public void addOrder(Order order) {
         lock.lock();
@@ -71,7 +81,7 @@ public class LimitOrderBook {
     }
 
     /**
-     * This modifies an existing order, it loses it's priority after.
+     * This modifies an existing order, it loses its priority after.
      *
      * @param orderId
      * @param newOrderQuantity
@@ -92,13 +102,18 @@ public class LimitOrderBook {
 
                 /*
                  * The next two line could have be achieved by creating a new order entirely.
-                 * This would have allowed me to fully encapsulate the OrderTimeStamp, because opening it up with a setter
+                 * This would have allowed me to fully encapsulate the OrderTimeStamp, because
+                 * opening it up with a setter
                  * allows for possible modification to increase the order priority.
                  *
-                 * although Java is a GC language, I figured creating a new Order object every time a modification has to happen
-                 * would pollute the heap memory. Even though we can invoke GC, it however runs when it runs and not on demand. This
-                 * would mean in high volume usage the program at some point may slow down do to JVM (Heap Space) memory issues if scaling is not done properly
-                 * on cloud environment, on Virtual machines the CPU usage will affect the performance of the application.
+                 * although Java is a GC language, I figured creating a new Order object every
+                 * time a modification has to happen
+                 * would pollute the heap memory. Even though we can invoke GC, it however runs
+                 * when it runs and not on demand. This
+                 * would mean in high volume usage the program at some point may slow down do to
+                 * JVM (Heap Space) memory issues if scaling is not done properly
+                 * on cloud environment, on Virtual machines the CPU usage will affect the
+                 * performance of the application.
                  */
                 order.modifyOrder(newOrderQuantity);
                 order.setOrderTimeStamp(System.nanoTime());
@@ -113,10 +128,9 @@ public class LimitOrderBook {
         }
     }
 
-
     /**
-     * @param orderId
-     * @return
+     * @param orderId : UUID Id of the order
+     * @return Boolean : true if order with such ID exist, else false
      */
     public boolean deleteOrder(String orderId) {
         lock.lock();

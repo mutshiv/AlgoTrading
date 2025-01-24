@@ -58,4 +58,13 @@ public class Order {
         this.quantity = newQuantity;
     }
 
+    /**
+     * Reduces the quantity of the order after a sell.
+     *
+     * @param reductionAmount
+     */
+    public void reduceQuantity(int reductionAmount) {
+        this.quantity -= reductionAmount;
+    }
+
 }
