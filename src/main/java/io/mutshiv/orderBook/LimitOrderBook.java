@@ -1,7 +1,11 @@
 package io.mutshiv.orderBook;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,26 +41,35 @@ public class LimitOrderBook {
     }
 
     /**
-     * A live Orders view based on side and price.
+     * @return Map<String, Order> : key is the order UUID
+     */
+    public Map<String, Order> getLiveOrders() {
+        return liveOrders;
+    }
+
+    /**
+     * A Orders view based on side and price.
      * Returns back a sorted list of orders by their price priority level (Price
      * then time if prices are equal)
      *
      * @param side  : BUY || SELL
      * @param price : Double value
-     * @return Map<String, Order> || an Empty Map if there are no order yet
+     * @return List<Order> || an Empty Map if there are no order yet
      */
-    public Map<String, Order> viewOrders(String side, double price) {
-        this.liveOrders.entrySet().forEach(e -> System.out.printf("Order ID = %s, price = %.2f, posted at = %d",
-                e.getValue().getId(), e.getValue().getPrice(), e.getValue().getOrderTimeStamp()));
+    public List<Order> viewOrders(String side, double price) {
+        PriorityQueue<Order> ordersQueue = side.equalsIgnoreCase("BUY") ? this.getBuyOrders() : this.getSellOrders();
+        lock.lock();
 
-        return !this.liveOrders.isEmpty() ? this.liveOrders.entrySet().stream()
-                .filter((entry) -> entry.getValue().getPrice() == price
-                        && entry.getValue().getSide().equalsIgnoreCase(side))
-                // .sorted(Comparator.comparingDouble((Map.Entry<String, Order> entry) ->
-                // entry.getValue().getPrice()).reversed()
-                // .thenComparingLong(entry -> entry.getValue().getOrderTimeStamp()))
-                .collect(Collectors.toConcurrentMap(Map.Entry::getKey, Map.Entry::getValue))
-                : Collections.emptyMap();
+        try {
+            return ordersQueue.stream()
+                    .filter(order -> order.getPrice() == price
+                            && order.getSide().equalsIgnoreCase(side))
+                    .sorted(Comparator.comparingDouble(Order::getPrice).reversed()
+                            .thenComparingLong(Order::getOrderTimeStamp))
+                    .collect(Collectors.toList());
+        } finally {
+            lock.unlock();
+        }
     }
 
     /**
@@ -116,7 +129,7 @@ public class LimitOrderBook {
                  * performance of the application.
                  */
                 order.modifyOrder(newOrderQuantity);
-                order.setOrderTimeStamp(System.nanoTime());
+                order.setOrderTimeStamp(System.currentTimeMillis());
 
                 this.addOrder(order);
 

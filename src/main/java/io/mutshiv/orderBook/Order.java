@@ -18,7 +18,7 @@ public class Order {
         this.side = side;
         this.quantity = quantity;
         this.price = price;
-        this.orderTimeStamp = System.nanoTime();
+        this.orderTimeStamp = System.currentTimeMillis();
     }
 
     public long getOrderTimeStamp() {
