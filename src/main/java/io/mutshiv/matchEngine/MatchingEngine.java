@@ -56,10 +56,10 @@ public class MatchingEngine implements IOrderBookObserver {
         while (!sideOrderQueue.isEmpty() && transactionOrder.getQuantity() > 0) {
             Order bestMatch = sideOrderQueue.peek();
             boolean canTrade = "BUY".equalsIgnoreCase(transactionOrder.getSide())
-                    ? transactionOrder.getPrice() >= bestMatch.getPrice()
-                    : transactionOrder.getPrice() <= bestMatch.getPrice();
+                    ? transactionOrder.getPrice() <= bestMatch.getPrice()
+                    : transactionOrder.getPrice() >= bestMatch.getPrice();
 
-            if (canTrade)
+            if (!canTrade)
                 break;
 
             int tradeQuantity = Math.min(transactionOrder.getQuantity(), bestMatch.getQuantity());
@@ -71,6 +71,7 @@ public class MatchingEngine implements IOrderBookObserver {
 
             if (bestMatch.getQuantity() == 0) {
                 sideOrderQueue.poll();
+                this.lob.getLiveOrders().remove(bestMatch.getId());
             }
         }
     }
