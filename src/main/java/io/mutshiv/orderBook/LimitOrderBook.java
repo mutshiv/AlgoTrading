@@ -1,9 +1,6 @@
 package io.mutshiv.orderBook;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +17,7 @@ public class LimitOrderBook {
 
     private final Lock lock = new ReentrantLock();
     private final Map<String, Order> liveOrders;
+    private final List<IOrderBookObserver> observers;
 
     public LimitOrderBook() {
         this.buyOrders = new PriorityQueue<>(Comparator.<Order>comparingDouble(Order::getPrice).reversed()
@@ -30,6 +28,7 @@ public class LimitOrderBook {
                         .thenComparing(Order::getOrderTimeStamp));
 
         this.liveOrders = new ConcurrentHashMap<>();
+        this.observers = new ArrayList<>();
     }
 
     public PriorityQueue<Order> getBuyOrders() {
@@ -38,6 +37,14 @@ public class LimitOrderBook {
 
     public PriorityQueue<Order> getSellOrders() {
         return sellOrders;
+    }
+
+    public void registerObserver(IOrderBookObserver observer) {
+        observers.add(observer);
+    }
+
+    public void unregisterObserver(IOrderBookObserver observer) {
+        observers.remove(observer);
     }
 
     /**
@@ -88,6 +95,7 @@ public class LimitOrderBook {
             }
 
             this.liveOrders.put(order.getId(), order);
+            notifyObservers(order, "ADD");
         } finally {
             lock.unlock();
         }
@@ -133,6 +141,8 @@ public class LimitOrderBook {
 
                 this.addOrder(order);
 
+                notifyObservers(order, "MODIFY");
+
                 return true;
             }
             return false;
@@ -144,6 +154,7 @@ public class LimitOrderBook {
     /**
      * @param orderId : UUID Id of the order
      * @return Boolean : true if order with such ID exist, else false
+     *
      */
     public boolean deleteOrder(String orderId) {
         lock.lock();
@@ -158,9 +169,24 @@ public class LimitOrderBook {
                     return this.sellOrders.remove(order);
                 }
             }
+
+            notifyObservers(order, "DELETE");
             return false;
         } finally {
             lock.unlock();
+        }
+    }
+
+    /**
+     * Notifies all observers of an order event.
+     *
+     * @param order     : The order that triggered the event.
+     * @param eventType : The type of event ("ADD" or "MODIFY" or "DELETE").
+     *
+     */
+    private void notifyObservers(Order order, String eventType) {
+        for (IOrderBookObserver observer : observers) {
+            observer.onOrderEvent(order, eventType);
         }
     }
 }

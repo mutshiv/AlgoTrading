@@ -7,9 +7,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Test;
@@ -37,9 +37,9 @@ public class LimitOrderBookTest {
     public void viewOrders() {
         LimitOrderBook lob = new LimitOrderBook();
 
-        assertEquals(new ConcurrentHashMap<>(), lob.viewOrders("SELL", 56.3),
+        assertEquals(new ArrayList<>(), lob.viewOrders("SELL", 56.3),
                 "It should return an Empty Map denoting no orders in the orderBook");
-        assertEquals(new ConcurrentHashMap<>(), lob.viewOrders("BUY", 56.3),
+        assertEquals(new ArrayList<>(), lob.viewOrders("BUY", 56.3),
                 "It should return an Empty Map denoting no orders in the orderBook");
     }
 
@@ -115,7 +115,8 @@ public class LimitOrderBookTest {
 
         assertTrue(lob.deleteOrder(orderToDelete.getId()));
 
-        assertEquals(0, lob.viewOrders(orderToDelete.getSide(), orderToDelete.getPrice()), "This Order must not exist as it was just deleted.");
+        assertEquals(0, lob.viewOrders(orderToDelete.getSide(), orderToDelete.getPrice()).size(),
+                "This Order must not exist as it was just deleted.");
 
         assertEquals(2, lob.getBuyOrders().size());
         assertEquals(2, lob.getSellOrders().size());
@@ -135,12 +136,13 @@ public class LimitOrderBookTest {
         Order order5 = new Order(101.0, 30, "BUY");
 
         orderBook.addOrder(order1);
-        Thread.sleep(900);
+        Thread.sleep(1000);
         orderBook.addOrder(order2);
-        Thread.sleep(500);
+        Thread.sleep(1000);
         orderBook.addOrder(order3);
-        Thread.sleep(1300);
+        Thread.sleep(1000);
         orderBook.addOrder(order4);
+        Thread.sleep(1000);
         orderBook.addOrder(order5);
 
         this.viewLiveOrders(orderBook.getLiveOrders());
@@ -157,6 +159,7 @@ public class LimitOrderBookTest {
         System.out.printf("\nThe new topOrder has ID: %s\n", topOrder.getId());
         assertNotEquals(order1, topOrder, "Order1 should lose its original priority after modification");
 
+        System.out.printf("\nThe new top order is ID : %s, \t\tOld top order which is Order 2 is ID : %s\n", topOrder.getId(), order2.getId());
         assertEquals(order2, topOrder, "Order2 should now have the highest priority (FIFO for price 101.0)");
     }
 }
