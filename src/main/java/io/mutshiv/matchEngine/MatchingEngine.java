@@ -21,16 +21,17 @@ public class MatchingEngine implements IOrderBookObserver {
         this.lob.registerObserver(this);
     }
 
-	@Override
-	public void onOrderEvent(Order order, String orderEventType) {
+    @Override
+    public void onOrderEvent(Order order, String orderEventType) {
         System.out.printf("Order Event: %s -> %s%n", orderEventType, order.getId());
         if ("ADD".equalsIgnoreCase(orderEventType) || "MODIFY".equalsIgnoreCase(orderEventType)) {
             System.out.printf("Trading on order: %s%n", order.getId());
             this.tradeOnOrder(order);
         } else if ("DELETE".equalsIgnoreCase(orderEventType)) {
             System.out.printf("Order Deleted: %s%n", order.getId());
+            this.lob.getLiveOrders().remove(order.getId());
         }
-	}
+    }
 
     public void tradeOnOrder(Order newOrder) {
         lock.lock();
@@ -46,18 +47,22 @@ public class MatchingEngine implements IOrderBookObserver {
         }
     }
 
+    // TODO: Have to fix the liveOrders Map to reflect the changes in sell and buy
+    // order queues.
+
     /**
-     * matches the incoming order with best match prices, it also implements partial-fills
+     * matches the incoming order with best match prices, it also implements
+     * partial-fills
      *
-     * @param transactionOrder : incoming tradind order
-     * @param sideOrderQueue : for selection of BUY or SELL queue
+     * @param transactionOrder : incoming trade order
+     * @param sideOrderQueue   : for selection of BUY or SELL queue
      */
     private void matchOrder(Order transactionOrder, PriorityQueue<Order> sideOrderQueue) {
         while (!sideOrderQueue.isEmpty() && transactionOrder.getQuantity() > 0) {
             Order bestMatch = sideOrderQueue.peek();
             boolean canTrade = "BUY".equalsIgnoreCase(transactionOrder.getSide())
-                    ? transactionOrder.getPrice() <= bestMatch.getPrice()
-                    : transactionOrder.getPrice() >= bestMatch.getPrice();
+                    ? transactionOrder.getPrice() >= bestMatch.getPrice()
+                    : transactionOrder.getPrice() <= bestMatch.getPrice();
 
             if (!canTrade)
                 break;
@@ -72,6 +77,9 @@ public class MatchingEngine implements IOrderBookObserver {
             if (bestMatch.getQuantity() == 0) {
                 sideOrderQueue.poll();
                 this.lob.getLiveOrders().remove(bestMatch.getId());
+
+                if (transactionOrder.getQuantity() == 0)
+                    this.lob.getLiveOrders().remove(transactionOrder.getId());
             }
         }
     }

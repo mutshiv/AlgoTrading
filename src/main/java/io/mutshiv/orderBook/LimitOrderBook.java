@@ -20,12 +20,12 @@ public class LimitOrderBook {
     private final List<IOrderBookObserver> observers;
 
     public LimitOrderBook() {
-        this.buyOrders = new PriorityQueue<>(Comparator.<Order>comparingDouble(Order::getPrice).reversed()
-                .thenComparing(Order::getOrderTimeStamp));
+        this.buyOrders = new PriorityQueue<>(Comparator.<Order>comparingLong(Order::getOrderTimeStamp)
+                .thenComparing(Order::getPrice));
 
         this.sellOrders = new PriorityQueue<>(
-                Comparator.<Order>comparingDouble(Order::getPrice).reversed()
-                        .thenComparing(Order::getOrderTimeStamp));
+                Comparator.<Order>comparingLong(Order::getOrderTimeStamp)
+                        .thenComparing(Order::getPrice));
 
         this.liveOrders = new ConcurrentHashMap<>();
         this.observers = new ArrayList<>();
@@ -71,8 +71,8 @@ public class LimitOrderBook {
             return ordersQueue.stream()
                     .filter(order -> order.getPrice() == price
                             && order.getSide().equalsIgnoreCase(side))
-                    .sorted(Comparator.comparingDouble(Order::getPrice).reversed()
-                            .thenComparingLong(Order::getOrderTimeStamp))
+                    .sorted(Comparator.comparingLong(Order::getOrderTimeStamp)
+                            .thenComparingDouble(Order::getPrice))
                     .collect(Collectors.toList());
         } finally {
             lock.unlock();
@@ -186,6 +186,9 @@ public class LimitOrderBook {
      */
     private void notifyObservers(Order order, String eventType) {
         for (IOrderBookObserver observer : observers) {
+            if (order.getQuantity() == 0)
+                liveOrders.remove(order.getId());
+
             observer.onOrderEvent(order, eventType);
         }
     }

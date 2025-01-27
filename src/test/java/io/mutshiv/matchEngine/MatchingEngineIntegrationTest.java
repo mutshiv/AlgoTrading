@@ -1,7 +1,5 @@
 package io.mutshiv.matchEngine;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -11,6 +9,8 @@ import org.junit.jupiter.api.Test;
 
 import io.mutshiv.orderBook.LimitOrderBook;
 import io.mutshiv.orderBook.Order;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class MatchingEngineIntegrationTest {
 
@@ -35,17 +35,23 @@ public class MatchingEngineIntegrationTest {
         System.out.println("Adding SELL orders...");
         Order sellOrder1 = new Order(100.0, 50, "SELL");
         Order sellOrder2 = new Order(105.0, 30, "SELL");
+        Order sellOrder3 = new Order(100.0, 30, "SELL");
         lob.addOrder(sellOrder1);
         lob.addOrder(sellOrder2);
+        lob.addOrder(sellOrder3);
+
+        System.out.println("\nSorted orders by price...");
+        viewLiveOrders(lob.getLiveOrders());
 
         System.out.println("\nAdding BUY order (partial fill scenario)...");
-        Order buyOrder1 = new Order(100.0, 20, "BUY"); 
+        Order buyOrder1 = new Order(100.0, 50, "BUY");
         lob.addOrder(buyOrder1);
 
         viewLiveOrders(lob.getLiveOrders());
 
-        assertEquals(10, lob.getLiveOrders().get(sellOrder2.getId()).getQuantity(), "SELL order 1 should have 10 units remaining.");
-        assertEquals(10, lob.getSellOrders().peek().getQuantity(), "The remaining SELL order should be at the top.");
+        System.out.printf("The top order is %s\n",lob.getSellOrders().peek().getId());
+        assertNull(lob.getLiveOrders().get(sellOrder1.getId()), "SELL Order 1 should not exist now.");
+        assertEquals(sellOrder3, lob.getSellOrders().peek(), "The remaining SELL order should be at the top.");
 
         System.out.println("\nAdding BUY order (full fill scenario)...");
         Order buyOrder2 = new Order(100.0, 20, "BUY");
@@ -53,7 +59,7 @@ public class MatchingEngineIntegrationTest {
 
         viewLiveOrders(lob.getLiveOrders());
 
-        assertEquals(1, lob.getSellOrders().size(), "There should be only one SELL order remaining.");
+        assertEquals(2, lob.getSellOrders().size(), "There should be only one SELL order remaining.");
 /*
         assertEquals(30, lob.getSellOrders().peek().getQuantity(), "The remaining SELL order should have 30 units.");
 

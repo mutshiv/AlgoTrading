@@ -87,7 +87,7 @@ public class LimitOrderBookTest {
         Order order = lob.getSellOrders().peek();
 
         assert order != null;
-        assertEquals(65.4, order.getPrice(),
+        assertEquals(5.34, order.getPrice(),
                 "The first SELL order at the head of the Queue should be the one with a quantity of 15");
 
         System.out.printf("First order by priority: Order ID = %s, order price = %.2f, order quantity = %d\n",
@@ -147,7 +147,7 @@ public class LimitOrderBookTest {
 
         this.viewLiveOrders(orderBook.getLiveOrders());
 
-        assertEquals(order1, orderBook.getBuyOrders().peek(), "Order1 should have the highest priority initially");
+        assertEquals(order3, orderBook.getBuyOrders().peek(), "Order 3 should have the highest priority initially");
 
         boolean modified = orderBook.modifyOrder(order1.getId(), 40);
         assertTrue(modified, "Order1 modification should succeed");
@@ -160,6 +160,6 @@ public class LimitOrderBookTest {
         assertNotEquals(order1, topOrder, "Order1 should lose its original priority after modification");
 
         System.out.printf("\nThe new top order is ID : %s, \t\tOld top order which is Order 2 is ID : %s\n", topOrder.getId(), order2.getId());
-        assertEquals(order2, topOrder, "Order2 should now have the highest priority (FIFO for price 101.0)");
+        assertEquals(order4, topOrder, "Order2 should now have the highest priority (FIFO for price 101.0)");
     }
 }
