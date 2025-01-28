@@ -26,7 +26,8 @@ public class MatchingEngine implements IOrderBookObserver {
         System.out.printf("Order Event: %s -> %s%n", orderEventType, order.getId());
         if ("ADD".equalsIgnoreCase(orderEventType) || "MODIFY".equalsIgnoreCase(orderEventType)) {
             this.tradeOnOrder(order);
-        } else if ("DELETE".equalsIgnoreCase(orderEventType)) {
+        } 
+        else if ("DELETE".equalsIgnoreCase(orderEventType)) {
             System.out.printf("Order Deleted: %s%n", order.getId());
             this.lob.getLiveOrders().remove(order.getId());
         }

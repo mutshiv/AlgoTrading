@@ -32,7 +32,7 @@ public class MatchingEngineIntegrationTest {
         System.out.println("\nBuy Orders:");
         pq.forEach(bO -> {
             System.out.printf(
-                    "Order ID = %s, Price = %.2f, Quantity = %d, Side = %s, Time = %s\n",
+                    "\nOrder ID = %s, Price = %.2f, Quantity = %d, Side = %s, Time = %s\n",
                     bO.getId(), bO.getPrice(), bO.getQuantity(), bO.getSide(),
                     LocalDateTime.ofInstant(Instant.ofEpochMilli(bO.getOrderTimeStamp()), ZoneId.systemDefault()));
         });
@@ -82,10 +82,7 @@ public class MatchingEngineIntegrationTest {
 
         assertEquals(1, lob.getBuyOrders().size(), "There should be one BUY order in the book.");
         assertEquals(10, lob.getBuyOrders().peek().getQuantity(), "The unmatched BUY order should have 10 units.");
-        /*
-         * 
-         * assertEquals(2, lob.getLiveOrders().size(),
-         * "There should be two live orders (1 SELL, 1 BUY).");
-         */
+        assertEquals(2, lob.getLiveOrders().size(),
+                "There should be two live orders (1 SELL, 1 BUY).");
     }
 }
