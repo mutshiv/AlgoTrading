@@ -10,8 +10,16 @@ There are two test files, the LimitOrderBookTest and MatchingEngineIntegrationTe
 
 ## Solution Approach
 
+The Matching Engine is the driver of the application, as such it monitors what happens via the LimitOrderBook (LOB).
+For this I chose to make use of the observer pattern, as the trading should happen on **adding** of an order.
+
+Any time an **Order** is --added, modified, & removed-- the Matching Engine attempts to do the matching.
 
 ## Efficiency Mechanisms
 
 
 ## Data structures
+
+- CurrentHashMap
+- List
+- PriorityQueue

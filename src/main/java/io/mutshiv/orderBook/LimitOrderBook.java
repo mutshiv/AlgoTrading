@@ -16,7 +16,7 @@ public class LimitOrderBook {
     private final PriorityQueue<Order> sellOrders;
 
     private final Lock lock = new ReentrantLock();
-    private final Map<String, Order> liveOrders;
+    private final ConcurrentHashMap<String, Order> liveOrders;
     private final List<IOrderBookObserver> observers;
 
     public LimitOrderBook() {
@@ -53,7 +53,7 @@ public class LimitOrderBook {
      *
      * @return Map<String, Order> : key is the order UUID
      */
-    public Map<String, Order> getLiveOrders() {
+    public ConcurrentHashMap<String, Order> getLiveOrders() {
         return liveOrders;
     }
 

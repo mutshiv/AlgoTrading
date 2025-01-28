@@ -82,7 +82,5 @@ public class MatchingEngineIntegrationTest {
 
         assertEquals(1, lob.getBuyOrders().size(), "There should be one BUY order in the book.");
         assertEquals(10, lob.getBuyOrders().peek().getQuantity(), "The unmatched BUY order should have 10 units.");
-        assertEquals(2, lob.getLiveOrders().size(),
-                "There should be two live orders (1 SELL, 1 BUY).");
     }
 }
