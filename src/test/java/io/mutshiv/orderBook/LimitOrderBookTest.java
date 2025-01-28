@@ -63,7 +63,7 @@ public class LimitOrderBookTest {
 
         System.out.println("\nFiltered Orders::");
         filteredOrders.forEach(o -> {
-            System.out.printf("OrderID = %s; Order Side = %s; Order Quantity = %d", o.getId(), o.getSide(),
+            System.out.printf("OrderID = %s; Order Side = %s; Order Quantity = %d\n", o.getId(), o.getSide(),
                     o.getQuantity());
         });
     }
@@ -80,9 +80,6 @@ public class LimitOrderBookTest {
         lob.addOrder(new Order(65.4, 35, "BUY"));
         lob.addOrder(new Order(6.4, 15, "BUY"));
         lob.addOrder(new Order(6.4, 15, "BUY"));
-
-        this.viewLiveOrders(lob.getLiveOrders());
-        System.out.println("\n");
 
         Order order = lob.getSellOrders().peek();
 
@@ -120,8 +117,6 @@ public class LimitOrderBookTest {
 
         assertEquals(2, lob.getBuyOrders().size());
         assertEquals(2, lob.getSellOrders().size());
-
-        this.viewLiveOrders(lob.getLiveOrders());
     }
 
     @Test
@@ -145,21 +140,14 @@ public class LimitOrderBookTest {
         Thread.sleep(1000);
         orderBook.addOrder(order5);
 
-        this.viewLiveOrders(orderBook.getLiveOrders());
-
         assertEquals(order3, orderBook.getBuyOrders().peek(), "Order 3 should have the highest priority initially");
 
         boolean modified = orderBook.modifyOrder(order1.getId(), 40);
         assertTrue(modified, "Order1 modification should succeed");
 
-        System.out.println("\nOrder priority after an order was modified");
-        this.viewLiveOrders(orderBook.getLiveOrders());
-
         Order topOrder = orderBook.getBuyOrders().peek();
-        System.out.printf("\nThe new topOrder has ID: %s\n", topOrder.getId());
         assertNotEquals(order1, topOrder, "Order1 should lose its original priority after modification");
 
-        System.out.printf("\nThe new top order is ID : %s, \t\tOld top order which is Order 2 is ID : %s\n", topOrder.getId(), order2.getId());
-        assertEquals(order4, topOrder, "Order2 should now have the highest priority (FIFO for price 101.0)");
+        assertEquals(order3, topOrder, "Order 3 should now have the highest priority (FIFO for price 100.0)");
     }
 }

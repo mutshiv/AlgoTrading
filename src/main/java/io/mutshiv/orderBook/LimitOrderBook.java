@@ -48,6 +48,9 @@ public class LimitOrderBook {
     }
 
     /**
+     * This is an auxilliary function that show all orders in one list.
+     * These orders will not be order as the Map is not ordered.
+     *
      * @return Map<String, Order> : key is the order UUID
      */
     public Map<String, Order> getLiveOrders() {
@@ -179,6 +182,7 @@ public class LimitOrderBook {
 
     /**
      * Notifies all observers of an order event.
+     * Orders update is also done here as all this gets invoked on every order event.
      *
      * @param order     : The order that triggered the event.
      * @param eventType : The type of event ("ADD" or "MODIFY" or "DELETE").
@@ -190,6 +194,13 @@ public class LimitOrderBook {
                 liveOrders.remove(order.getId());
 
             observer.onOrderEvent(order, eventType);
+
+            if (order.getSide().equalsIgnoreCase("BUY") && order.getQuantity() == 0) {
+                buyOrders.remove(order);
+            } else if (order.getSide().equalsIgnoreCase("SELL") && order.getQuantity() == 0) {
+                sellOrders.remove(order);
+            }
+
         }
     }
 }

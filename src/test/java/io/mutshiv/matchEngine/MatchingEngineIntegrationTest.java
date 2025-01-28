@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Map;
+import java.util.PriorityQueue;
 
 import org.junit.jupiter.api.Test;
 
@@ -25,6 +26,16 @@ public class MatchingEngineIntegrationTest {
                 "Order ID = %s, Price = %.2f, Quantity = %d, Side = %s, Time = %s\n",
                 value.getId(), value.getPrice(), value.getQuantity(), value.getSide(),
                 LocalDateTime.ofInstant(Instant.ofEpochMilli(value.getOrderTimeStamp()), ZoneId.systemDefault())));
+    }
+
+    private void viewOrderBySide(PriorityQueue<Order> pq) {
+        System.out.println("\nBuy Orders:");
+        pq.forEach(bO -> {
+            System.out.printf(
+                    "Order ID = %s, Price = %.2f, Quantity = %d, Side = %s, Time = %s\n",
+                    bO.getId(), bO.getPrice(), bO.getQuantity(), bO.getSide(),
+                    LocalDateTime.ofInstant(Instant.ofEpochMilli(bO.getOrderTimeStamp()), ZoneId.systemDefault()));
+        });
     }
 
     @Test
@@ -49,7 +60,7 @@ public class MatchingEngineIntegrationTest {
 
         viewLiveOrders(lob.getLiveOrders());
 
-        System.out.printf("The top order is %s\n",lob.getSellOrders().peek().getId());
+        System.out.printf("The top order is %s\n", lob.getSellOrders().peek().getId());
         assertNull(lob.getLiveOrders().get(sellOrder1.getId()), "SELL Order 1 should not exist now.");
         assertEquals(sellOrder3, lob.getSellOrders().peek(), "The remaining SELL order should be at the top.");
 
@@ -60,19 +71,21 @@ public class MatchingEngineIntegrationTest {
         viewLiveOrders(lob.getLiveOrders());
 
         assertEquals(2, lob.getSellOrders().size(), "There should be only one SELL order remaining.");
-/*
-        assertEquals(30, lob.getSellOrders().peek().getQuantity(), "The remaining SELL order should have 30 units.");
+        assertEquals(10, lob.getSellOrders().peek().getQuantity(), "The remaining SELL order should have 10 units.");
 
         System.out.println("\nAdding BUY order (no match scenario)...");
         Order buyOrder3 = new Order(95.0, 10, "BUY");
         lob.addOrder(buyOrder3);
 
         viewLiveOrders(lob.getLiveOrders());
+        this.viewOrderBySide(lob.getBuyOrders());
 
         assertEquals(1, lob.getBuyOrders().size(), "There should be one BUY order in the book.");
         assertEquals(10, lob.getBuyOrders().peek().getQuantity(), "The unmatched BUY order should have 10 units.");
-
-        assertEquals(2, lob.getLiveOrders().size(), "There should be two live orders (1 SELL, 1 BUY).");
-*/
+        /*
+         * 
+         * assertEquals(2, lob.getLiveOrders().size(),
+         * "There should be two live orders (1 SELL, 1 BUY).");
+         */
     }
 }

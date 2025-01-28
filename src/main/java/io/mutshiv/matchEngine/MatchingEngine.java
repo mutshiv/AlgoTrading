@@ -25,7 +25,6 @@ public class MatchingEngine implements IOrderBookObserver {
     public void onOrderEvent(Order order, String orderEventType) {
         System.out.printf("Order Event: %s -> %s%n", orderEventType, order.getId());
         if ("ADD".equalsIgnoreCase(orderEventType) || "MODIFY".equalsIgnoreCase(orderEventType)) {
-            System.out.printf("Trading on order: %s%n", order.getId());
             this.tradeOnOrder(order);
         } else if ("DELETE".equalsIgnoreCase(orderEventType)) {
             System.out.printf("Order Deleted: %s%n", order.getId());
@@ -33,7 +32,7 @@ public class MatchingEngine implements IOrderBookObserver {
         }
     }
 
-    public void tradeOnOrder(Order newOrder) {
+    private void tradeOnOrder(Order newOrder) {
         lock.lock();
 
         try {
@@ -46,9 +45,6 @@ public class MatchingEngine implements IOrderBookObserver {
             lock.unlock();
         }
     }
-
-    // TODO: Have to fix the liveOrders Map to reflect the changes in sell and buy
-    // order queues.
 
     /**
      * matches the incoming order with best match prices, it also implements
