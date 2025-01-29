@@ -4,7 +4,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Map;
-import java.util.PriorityQueue;
+import java.util.concurrent.PriorityBlockingQueue;
 
 import org.junit.jupiter.api.Test;
 
@@ -31,9 +31,9 @@ public class MatchingEngineIntegrationTest {
     /**
      * Debugging helper function.
      *
-     * @param pq : BUY || SELL PriorityQueue
+     * @param pq : BUY || SELL PriorityBlockingQueue
      */
-    private void viewOrderBySide(PriorityQueue<Order> pq) {
+    private void viewOrderBySide(PriorityBlockingQueue<Order> pq) {
         System.out.println("\nBuy Orders:");
         pq.forEach(bO -> {
             System.out.printf(

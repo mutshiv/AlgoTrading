@@ -1,6 +1,6 @@
 package io.mutshiv.matchEngine;
 
-import java.util.PriorityQueue;
+import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -63,7 +63,7 @@ public class MatchingEngine implements IOrderBookObserver {
      * @param transactionOrder : incoming trade order
      * @param sideOrderQueue   : for selection of BUY or SELL queue
      */
-    private void matchOrder(Order transactionOrder, PriorityQueue<Order> sideOrderQueue) {
+    private void matchOrder(Order transactionOrder, PriorityBlockingQueue<Order> sideOrderQueue) {
         while (!sideOrderQueue.isEmpty() && transactionOrder.getQuantity() > 0) {
             Order bestMatch = sideOrderQueue.peek();
             boolean canTrade = "BUY".equalsIgnoreCase(transactionOrder.getSide())

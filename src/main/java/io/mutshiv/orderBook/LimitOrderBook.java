@@ -3,26 +3,26 @@ package io.mutshiv.orderBook;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.PriorityQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 public class LimitOrderBook {
 
-    private final PriorityQueue<Order> buyOrders;
-    private final PriorityQueue<Order> sellOrders;
+    private final PriorityBlockingQueue<Order> buyOrders;
+    private final PriorityBlockingQueue<Order> sellOrders;
 
     private final Lock lock = new ReentrantLock();
     private final ConcurrentHashMap<String, Order> liveOrders;
     private final List<IOrderBookObserver> observers;
 
     public LimitOrderBook() {
-        this.buyOrders = new PriorityQueue<>(Comparator.<Order>comparingDouble(Order::getPrice)
+        this.buyOrders = new PriorityBlockingQueue<>(100, Comparator.<Order>comparingDouble(Order::getPrice)
                 .thenComparingLong(Order::getOrderTimeStamp));
 
-        this.sellOrders = new PriorityQueue<>(
+        this.sellOrders = new PriorityBlockingQueue<>(100,
                 Comparator.<Order>comparingDouble(Order::getPrice)
                         .thenComparingLong(Order::getOrderTimeStamp));
 
@@ -30,11 +30,11 @@ public class LimitOrderBook {
         this.observers = new ArrayList<>();
     }
 
-    public PriorityQueue<Order> getBuyOrders() {
+    public PriorityBlockingQueue<Order> getBuyOrders() {
         return buyOrders;
     }
 
-    public PriorityQueue<Order> getSellOrders() {
+    public PriorityBlockingQueue<Order> getSellOrders() {
         return sellOrders;
     }
 
@@ -49,6 +49,7 @@ public class LimitOrderBook {
     /**
      * This is an auxilliary function that show all orders in one list.
      * These orders will not be ordered as the Map is not ordered.
+     * 
      * @return ConcurrentHashMap<String, Order> : key is the order UUID
      */
     public ConcurrentHashMap<String, Order> getLiveOrders() {
@@ -65,7 +66,7 @@ public class LimitOrderBook {
      * @return List<Order> || an Empty Map if there are no order yet
      */
     public List<Order> viewOrders(String side, double price) {
-        PriorityQueue<Order> ordersQueue = side.equalsIgnoreCase("BUY") ? this.getBuyOrders() : this.getSellOrders();
+        PriorityBlockingQueue<Order> ordersQueue = side.equalsIgnoreCase("BUY") ? this.getBuyOrders() : this.getSellOrders();
         lock.lock();
 
         try {
@@ -192,18 +193,23 @@ public class LimitOrderBook {
      *
      */
     private void notifyObservers(Order order, String eventType) {
-        for (IOrderBookObserver observer : observers) {
-            if (order.getQuantity() == 0)
-                liveOrders.remove(order.getId());
+        lock.lock();
 
-            observer.onOrderEvent(order, eventType);
+        try {
+            for (IOrderBookObserver observer : observers) {
+                if (order.getQuantity() == 0)
+                    liveOrders.remove(order.getId());
 
-            if (order.getSide().equalsIgnoreCase("BUY") && order.getQuantity() == 0) {
-                buyOrders.remove(order);
-            } else if (order.getSide().equalsIgnoreCase("SELL") && order.getQuantity() == 0) {
-                sellOrders.remove(order);
+                observer.onOrderEvent(order, eventType);
+
+                if (order.getSide().equalsIgnoreCase("BUY") && order.getQuantity() == 0) {
+                    buyOrders.remove(order);
+                } else if (order.getSide().equalsIgnoreCase("SELL") && order.getQuantity() == 0) {
+                    sellOrders.remove(order);
+                }
             }
-
+        } finally {
+            lock.unlock();
         }
     }
 }

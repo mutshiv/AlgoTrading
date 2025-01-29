@@ -13,6 +13,9 @@ There are two test files, the LimitOrderBookTest and MatchingEngineIntegrationTe
 The Matching Engine is the driver of the application, as such it monitors what happens via the LimitOrderBook (LOB).
 For this I chose to make use of the observer pattern, as the trading should happen on **adding** of an order.
 
+Order are sort on FIFO principles following price-time model. A basic Queue follows the FIFO algorithm, however for this use case a PriorityBlockingQueueQueue was
+chosen; as it allows for a custom comparator during instantiation and support by default multi-threading. 
+
 Any time an **Order** is **added, modified, & removed** the Matching Engine attempts to do the matching.
 
 There's application of the some of the SOLID and Clean-Code principles, by making the methods more shorter and readable. 
@@ -29,4 +32,4 @@ The ReentrantLock ensures threads are managed by the JVM. The lock can put itsel
 
 - CurrentHashMap
 - List
-- PriorityQueue
+- PriorityBlockingQueue
