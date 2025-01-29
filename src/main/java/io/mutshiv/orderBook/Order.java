@@ -51,6 +51,7 @@ public class Order {
 
     /**
      * Modifies the quantity of the order.
+     * The order will lose it's priority on the queue.
      *
      * @param newQuantity
      */

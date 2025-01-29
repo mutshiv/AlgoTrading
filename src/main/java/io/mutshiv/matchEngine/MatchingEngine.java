@@ -24,15 +24,20 @@ public class MatchingEngine implements IOrderBookObserver {
     @Override
     public void onOrderEvent(Order order, String orderEventType) {
         System.out.printf("Order Event: %s -> %s%n", orderEventType, order.getId());
+
         if ("ADD".equalsIgnoreCase(orderEventType) || "MODIFY".equalsIgnoreCase(orderEventType)) {
             this.tradeOnOrder(order);
-        } 
-        else if ("DELETE".equalsIgnoreCase(orderEventType)) {
+        } else if ("DELETE".equalsIgnoreCase(orderEventType)) {
             System.out.printf("Order Deleted: %s%n", order.getId());
+            this.lob.deleteOrder(order.getId());
             this.lob.getLiveOrders().remove(order.getId());
         }
     }
 
+    /**
+     * 
+     * @param newOrder : incoming Order
+     */
     private void tradeOnOrder(Order newOrder) {
         lock.lock();
 
@@ -49,7 +54,8 @@ public class MatchingEngine implements IOrderBookObserver {
 
     /**
      * matches the incoming order with best match prices, it also implements
-     * partial-fills
+     * partial-fills. If the order is filled completely, it is removed from the
+     * particular queue and liveOrder ConcurrentHashMap.
      *
      * @param transactionOrder : incoming trade order
      * @param sideOrderQueue   : for selection of BUY or SELL queue

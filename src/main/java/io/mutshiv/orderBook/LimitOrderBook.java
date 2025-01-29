@@ -51,7 +51,7 @@ public class LimitOrderBook {
      * This is an auxilliary function that show all orders in one list.
      * These orders will not be order as the Map is not ordered.
      *
-     * @return Map<String, Order> : key is the order UUID
+     * @return ConcurrentHashMap<String, Order> : key is the order UUID
      */
     public ConcurrentHashMap<String, Order> getLiveOrders() {
         return liveOrders;
@@ -182,7 +182,7 @@ public class LimitOrderBook {
 
     /**
      * Notifies all observers of an order event.
-     * Orders update is also done here as all this gets invoked on every order event.
+     * Order updates are also done here as all this gets invoked on every order event.
      *
      * @param order     : The order that triggered the event.
      * @param eventType : The type of event ("ADD" or "MODIFY" or "DELETE").

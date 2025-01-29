@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class MatchingEngineIntegrationTest {
 
     /**
-     * Helper method to display the current live orders in the LimitOrderBook.
+     * Helper method to display all live orders in the LimitOrderBook.
      * 
      * @param liveOrders Map of all live orders.
      */
@@ -28,6 +28,11 @@ public class MatchingEngineIntegrationTest {
                 LocalDateTime.ofInstant(Instant.ofEpochMilli(value.getOrderTimeStamp()), ZoneId.systemDefault())));
     }
 
+    /**
+     * Debugging helper function.
+     *
+     * @param pq : BUY || SELL PriorityQueue
+     */
     private void viewOrderBySide(PriorityQueue<Order> pq) {
         System.out.println("\nBuy Orders:");
         pq.forEach(bO -> {
