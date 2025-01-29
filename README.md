@@ -1,6 +1,6 @@
 # RMB Algo Trading LOB
 
-`#RRGGBB` A Limit Order Book with its Trade Matching Engine.
+`#RRGGBBA Limit Order Book with its Trade Matching Engine.`
 
 ## Running the application
 
