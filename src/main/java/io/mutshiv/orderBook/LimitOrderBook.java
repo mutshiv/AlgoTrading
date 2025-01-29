@@ -3,7 +3,6 @@ package io.mutshiv.orderBook;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
@@ -20,12 +19,12 @@ public class LimitOrderBook {
     private final List<IOrderBookObserver> observers;
 
     public LimitOrderBook() {
-        this.buyOrders = new PriorityQueue<>(Comparator.<Order>comparingLong(Order::getOrderTimeStamp)
-                .thenComparing(Order::getPrice));
+        this.buyOrders = new PriorityQueue<>(Comparator.<Order>comparingDouble(Order::getPrice)
+                .thenComparingLong(Order::getOrderTimeStamp));
 
         this.sellOrders = new PriorityQueue<>(
-                Comparator.<Order>comparingLong(Order::getOrderTimeStamp)
-                        .thenComparing(Order::getPrice));
+                Comparator.<Order>comparingDouble(Order::getPrice)
+                        .thenComparingLong(Order::getOrderTimeStamp));
 
         this.liveOrders = new ConcurrentHashMap<>();
         this.observers = new ArrayList<>();
@@ -50,7 +49,6 @@ public class LimitOrderBook {
     /**
      * This is an auxilliary function that show all orders in one list.
      * These orders will not be ordered as the Map is not ordered.
-     *
      * @return ConcurrentHashMap<String, Order> : key is the order UUID
      */
     public ConcurrentHashMap<String, Order> getLiveOrders() {
@@ -74,8 +72,8 @@ public class LimitOrderBook {
             return ordersQueue.stream()
                     .filter(order -> order.getPrice() == price
                             && order.getSide().equalsIgnoreCase(side))
-                    .sorted(Comparator.comparingLong(Order::getOrderTimeStamp)
-                            .thenComparingDouble(Order::getPrice))
+                    .sorted(Comparator.comparingDouble(Order::getPrice)
+                            .thenComparingLong(Order::getOrderTimeStamp))
                     .collect(Collectors.toList());
         } finally {
             lock.unlock();
