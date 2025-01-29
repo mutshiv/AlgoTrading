@@ -10,6 +10,9 @@ import io.mutshiv.orderBook.Order;
 
 /**
  * MatchingEngine
+ *
+ * All the fullfilling of orders done here.
+ *
  */
 public class MatchingEngine implements IOrderBookObserver {
 

@@ -49,7 +49,7 @@ public class LimitOrderBook {
 
     /**
      * This is an auxilliary function that show all orders in one list.
-     * These orders will not be order as the Map is not ordered.
+     * These orders will not be ordered as the Map is not ordered.
      *
      * @return ConcurrentHashMap<String, Order> : key is the order UUID
      */
@@ -125,19 +125,23 @@ public class LimitOrderBook {
                 }
 
                 /*
-                 * The next two line could have be achieved by creating a new order entirely.
+                 * The next two lines could have been achieved by creating a new order object
+                 * entirely.
                  * This would have allowed me to fully encapsulate the OrderTimeStamp, because
                  * opening it up with a setter
                  * allows for possible modification to increase the order priority.
                  *
-                 * although Java is a GC language, I figured creating a new Order object every
-                 * time a modification has to happen
-                 * would pollute the heap memory. Even though we can invoke GC, it however runs
+                 * although Java is a Garbage Collected (GC) language, I figured creating a new
+                 * Order object every
+                 * time a modification (per thread) has to happen
+                 * would pollute the heap memory. Even though we can request GC, it however runs
                  * when it runs and not on demand. This
-                 * would mean in high volume usage the program at some point may slow down do to
+                 * would mean in high volume usage the program at some point may slow down due
+                 * to
                  * JVM (Heap Space) memory issues if scaling is not done properly
                  * on cloud environment, on Virtual machines the CPU usage will affect the
-                 * performance of the application.
+                 * performance of the application. GC itself also takes up compute time on the
+                 * CPU
                  */
                 order.modifyOrder(newOrderQuantity);
                 order.setOrderTimeStamp(System.currentTimeMillis());
@@ -181,8 +185,9 @@ public class LimitOrderBook {
     }
 
     /**
-     * Notifies all observers of an order event.
-     * Order updates are also done here as all this gets invoked on every order event.
+     * Notifies all registered observers for an order event.
+     * Order updates are also done here as all this gets invoked on every order
+     * event.
      *
      * @param order     : The order that triggered the event.
      * @param eventType : The type of event ("ADD" or "MODIFY" or "DELETE").
