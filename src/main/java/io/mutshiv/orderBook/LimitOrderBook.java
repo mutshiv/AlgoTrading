@@ -19,10 +19,10 @@ public class LimitOrderBook {
     private final List<IOrderBookObserver> observers;
 
     public LimitOrderBook() {
-        this.buyOrders = new PriorityBlockingQueue<>(100, Comparator.<Order>comparingDouble(Order::getPrice)
+        this.buyOrders = new PriorityBlockingQueue<>(50, Comparator.<Order>comparingDouble(Order::getPrice)
                 .thenComparingLong(Order::getOrderTimeStamp));
 
-        this.sellOrders = new PriorityBlockingQueue<>(100,
+        this.sellOrders = new PriorityBlockingQueue<>(50,
                 Comparator.<Order>comparingDouble(Order::getPrice)
                         .thenComparingLong(Order::getOrderTimeStamp));
 
