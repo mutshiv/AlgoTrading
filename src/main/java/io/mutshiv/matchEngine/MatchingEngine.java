@@ -75,7 +75,10 @@ public class MatchingEngine implements IOrderBookObserver {
 
             int tradeQuantity = Math.min(transactionOrder.getQuantity(), bestMatch.getQuantity());
 
-            System.out.printf("Trade Executed: %d units @ %.2f%n", tradeQuantity, bestMatch.getPrice());
+            System.out.printf(
+                    "[Trade Executed: %d units @ %.2f\tThe Orders are:\t Transaction Order (ID: %s, [Price: %.2f, Side: %s]); \t Best Match (ID: %s, [Price: %.2f, Side: %s])]\n",
+                    tradeQuantity, bestMatch.getPrice(), transactionOrder.getId(), transactionOrder.getPrice(),
+                    transactionOrder.getSide(), bestMatch.getId(), bestMatch.getPrice(), bestMatch.getSide());
 
             transactionOrder.reduceQuantity(tradeQuantity);
             bestMatch.reduceQuantity(tradeQuantity);
@@ -88,5 +91,12 @@ public class MatchingEngine implements IOrderBookObserver {
                     this.lob.getLiveOrders().remove(transactionOrder.getId());
             }
         }
+    }
+
+    /**
+     * Clean-up method onDestroy.
+     */
+    public void removeObserver() {
+        this.lob.unregisterObserver(this);
     }
 }

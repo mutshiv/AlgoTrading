@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
@@ -26,7 +27,7 @@ public class LimitOrderBookTest {
      */
     private void viewLiveOrders(Map<String, Order> liveOrders) {
         liveOrders.forEach((key, value) -> System.out.printf(
-                "Order ID = %s, price = %.2f, Order Quantity = %d, posted at = %s, Side: %s\n",
+                "\nOrder ID = %s, price = %.2f, Order Quantity = %d, posted at = %s, Side: %s\n",
                 value.getId(), value.getPrice(), value.getQuantity(),
                 LocalDateTime.ofInstant(Instant.ofEpochMilli(value.getOrderTimeStamp()), ZoneId.systemDefault()),
                 value.getSide()));
@@ -34,6 +35,7 @@ public class LimitOrderBookTest {
 
     @Test
     @org.junit.jupiter.api.Order(1)
+    @DisplayName("LOB should not have any orders")
     public void viewOrders() {
         LimitOrderBook lob = new LimitOrderBook();
 
@@ -45,6 +47,7 @@ public class LimitOrderBookTest {
 
     @Test
     @org.junit.jupiter.api.Order(2)
+    @DisplayName("LOB should have orders based on side and price point")
     public void viewOrders2() {
         LimitOrderBook lob = new LimitOrderBook();
 
@@ -61,11 +64,14 @@ public class LimitOrderBookTest {
         filteredOrders = lob.viewOrders("SELL", 5.34);
         assertEquals(2, filteredOrders.size(), "there should be two SELL orders available at that price");
 
-        System.out.println("\nFiltered Orders::");
+        System.out.println("\n SELL Filtered Orders at price point 5.34::");
         filteredOrders.forEach(o -> {
-            System.out.printf("OrderID = %s; Order Side = %s; Order Quantity = %d\n", o.getId(), o.getSide(),
+            System.out.printf("\nOrderID = %s; Order Side = %s; Order Quantity = %d\n", o.getId(), o.getSide(),
                     o.getQuantity());
         });
+
+        System.out.println("\nAll orders in the LOB viewOrders2::");
+        this.viewLiveOrders(lob.getLiveOrders());
     }
 
     @Test
@@ -87,13 +93,16 @@ public class LimitOrderBookTest {
         assertEquals(5.34, order.getPrice(),
                 "The first SELL order at the head of the Queue should be the one with a quantity of 15");
 
-        System.out.printf("First order by priority: Order ID = %s, order price = %.2f, order quantity = %d\n",
+        System.out.printf("\nFirst order by priority: Order ID = %s, order price = %.2f, order quantity = %d\n",
                 order.getId(), order.getPrice(),
                 order.getQuantity());
 
-        assertEquals(3, lob.getBuyOrders().size());
-        assertEquals(2, lob.getSellOrders().size());
+        assertEquals(3, lob.getBuyOrders().size(), "there shoud be 3 BUY orders in the LOB");
+        assertEquals(2, lob.getSellOrders().size(), "there should be 2 SELL order");
         assertEquals(5, lob.getLiveOrders().size(), "there should be a number matching the added orders.");
+
+        System.out.println("\nAll orders in the LOB on AddOrder Method::");
+        this.viewLiveOrders(lob.getLiveOrders());
     }
 
     @Test
@@ -117,6 +126,9 @@ public class LimitOrderBookTest {
 
         assertEquals(2, lob.getBuyOrders().size());
         assertEquals(2, lob.getSellOrders().size());
+  
+        System.out.println("\nAll orders in the LOB on DeleteOrder Method::");
+        this.viewLiveOrders(lob.getLiveOrders());
     }
 
     @Test
@@ -149,5 +161,8 @@ public class LimitOrderBookTest {
         assertNotEquals(order1, topOrder, "Order1 should lose its original priority after modification");
 
         assertEquals(order3, topOrder, "Order 3 should now have the highest priority (FIFO for price 100.0)");
+
+        System.out.println("\nAll orders in the LOB on modify Method::");
+        this.viewLiveOrders(orderBook.getLiveOrders());
     }
 }

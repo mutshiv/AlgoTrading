@@ -24,9 +24,9 @@ There's application of the some of the SOLID and Clean-Code principles, by makin
 
 The use of a combination of ConcurrentHashMap and List data structure ensures that the viewing of order (viewOrders both SELL & BUY orders) function is quick with 
 the Big O Notation of a List is O(1) for selection and insert into the list. The ConcurrentHashMap is used for thread-safety, while the management of thread locking and waiting 
-provides a performance overhead, it avoid at lot of boiler code to manually managing any other data structure...
+provides a performance overhead, it avoids at lot of boiler code to manually managing other data structure...
 
-The ReentrantLock ensures threads are managed by the JVM. The lock can put itself aside if long running and then reenter once it's ready to resume
+The ReentrantLock ensures threads are managed by the JVM. The lock can put itself aside if long running and then reenters once it's ready to resume
 
 ## Data structures
 
