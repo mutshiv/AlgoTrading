@@ -4,7 +4,8 @@ A Limit Order Book with its Trade Matching Engine.
 
 ## Dev Env
 
-
+Java 21
+Why 21? No particular reason but to experiment.
 
 ## Running the application
 
